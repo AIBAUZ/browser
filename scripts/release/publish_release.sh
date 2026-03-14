@@ -14,6 +14,7 @@ PUBLIC_KEY_PATH="release/keys/updater-signing-public.pem"
 PUSH_CONFIG="true"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ASSETS_TO_UPLOAD=()
 
 log() {
   printf '[release] %s\n' "$*"
@@ -51,6 +52,10 @@ What this script does:
   4) Triggers release-update-manifest.yml workflow.
   5) Waits for workflow completion.
   6) Verifies release now contains update-manifest.json and update-manifest.sig.
+
+Notes:
+  - At least one valid installer is required.
+  - If one platform installer is missing, release still proceeds with available assets.
 EOF
 }
 
@@ -263,13 +268,31 @@ ensure_assets() {
     WIN_ASSET="$(discover_asset '-name "*.exe" -o -name "*.msi"')"
   fi
 
-  [[ -n "$MAC_ASSET" ]] || die "macOS installer not found. Pass --mac /path/to/file.pkg"
-  [[ -n "$WIN_ASSET" ]] || die "Windows installer not found. Pass --win /path/to/file.exe"
-  [[ -f "$MAC_ASSET" ]] || die "macOS installer path does not exist: $MAC_ASSET"
-  [[ -f "$WIN_ASSET" ]] || die "Windows installer path does not exist: $WIN_ASSET"
+  ASSETS_TO_UPLOAD=()
 
-  log "Using macOS asset: $MAC_ASSET"
-  log "Using Windows asset: $WIN_ASSET"
+  if [[ -n "$MAC_ASSET" ]]; then
+    if [[ -f "$MAC_ASSET" ]]; then
+      ASSETS_TO_UPLOAD+=("$MAC_ASSET")
+      log "Using macOS asset: $MAC_ASSET"
+    else
+      log "Warning: macOS asset path does not exist, skipping: $MAC_ASSET"
+    fi
+  else
+    log "Warning: macOS installer not found"
+  fi
+
+  if [[ -n "$WIN_ASSET" ]]; then
+    if [[ -f "$WIN_ASSET" ]]; then
+      ASSETS_TO_UPLOAD+=("$WIN_ASSET")
+      log "Using Windows asset: $WIN_ASSET"
+    else
+      log "Warning: Windows asset path does not exist, skipping: $WIN_ASSET"
+    fi
+  else
+    log "Warning: Windows installer not found"
+  fi
+
+  [[ "${#ASSETS_TO_UPLOAD[@]}" -gt 0 ]] || die "No valid installer assets found. Provide at least one existing installer file."
 }
 
 create_or_update_release() {
@@ -277,14 +300,13 @@ create_or_update_release() {
 
   if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
     log "Release $TAG exists. Uploading/replacing assets"
-    gh release upload "$TAG" "$MAC_ASSET" "$WIN_ASSET" --repo "$REPO" --clobber
+    gh release upload "$TAG" "${ASSETS_TO_UPLOAD[@]}" --repo "$REPO" --clobber
     return 0
   fi
 
   local args=(
     "$TAG"
-    "$MAC_ASSET"
-    "$WIN_ASSET"
+    "${ASSETS_TO_UPLOAD[@]}"
     "--repo" "$REPO"
     "--title" "$TITLE"
   )

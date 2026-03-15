@@ -1,0 +1,92 @@
+name: Release Update Manifest
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.2.3)"
+        required: true
+        type: string
+      channel:
+        description: "Update channel"
+        required: false
+        default: "stable"
+        type: choice
+        options:
+          - stable
+          - beta
+
+permissions:
+  contents: write
+
+jobs:
+  build-manifest:
+    runs-on: ubuntu-latest
+    env:
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve tag and channel
+        id: vars
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+            echo "channel=${{ inputs.channel }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+            if [[ "${{ github.event.release.prerelease }}" == "true" ]]; then
+              echo "channel=beta" >> "$GITHUB_OUTPUT"
+            else
+              echo "channel=stable" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Build update-manifest.json
+        run: |
+          python3 scripts/updater/build_update_manifest.py \
+            --repo "${REPO}" \
+            --tag "${{ steps.vars.outputs.tag }}" \
+            --channel "${{ steps.vars.outputs.channel }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --output update-manifest.json
+
+      - name: Sign update-manifest.json
+        env:
+          UPDATER_SIGNING_PRIVATE_KEY_PEM: ${{ secrets.UPDATER_SIGNING_PRIVATE_KEY_PEM }}
+        run: |
+          if [[ -z "${UPDATER_SIGNING_PRIVATE_KEY_PEM}" ]]; then
+            echo "Missing required secret: UPDATER_SIGNING_PRIVATE_KEY_PEM" >&2
+            exit 1
+          fi
+          python3 scripts/updater/sign_manifest.py \
+            --manifest update-manifest.json \
+            --signature update-manifest.sig \
+            --signature-b64 update-manifest.sig.b64
+
+      - name: Upload manifest assets to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ steps.vars.outputs.tag }}" \
+            update-manifest.json \
+            update-manifest.sig \
+            --clobber
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: updater-manifest-${{ steps.vars.outputs.tag }}
+          path: |
+            update-manifest.json
+            update-manifest.sig
+            update-manifest.sig.b64
+

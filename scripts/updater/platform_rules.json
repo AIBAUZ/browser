@@ -1,0 +1,65 @@
+[
+  {
+    "pattern": "(?i)^aibabrowsersetup\\.(exe|msi)$",
+    "platform": "windows-x64",
+    "os": "windows",
+    "arch": "x64",
+    "installer": "exe"
+  },
+  {
+    "pattern": "(?i)(aibabrowser|aiba[-_. ]?browser).*(win|windows).*(x64|amd64).*(\\.exe|\\.msi)$",
+    "platform": "windows-x64",
+    "os": "windows",
+    "arch": "x64",
+    "installer": "exe"
+  },
+  {
+    "pattern": "(?i)(aibabrowser|aiba[-_. ]?browser).*(win|windows).*(arm64).*(\\.exe|\\.msi)$",
+    "platform": "windows-arm64",
+    "os": "windows",
+    "arch": "arm64",
+    "installer": "exe"
+  },
+  {
+    "pattern": "(?i)(aibabrowser|aiba[-_. ]?browser).*(mac|macos|osx).*(universal).*(\\.pkg|\\.dmg)$",
+    "platform": "macos-universal",
+    "os": "macos",
+    "arch": "universal",
+    "installer": "pkg"
+  },
+  {
+    "pattern": "(?i)(aibabrowser|aiba[-_. ]?browser).*(mac|macos|osx).*(arm64|aarch64).*(\\.pkg|\\.dmg)$",
+    "platform": "macos-arm64",
+    "os": "macos",
+    "arch": "arm64",
+    "installer": "pkg"
+  },
+  {
+    "pattern": "(?i)(aibabrowser|aiba[-_. ]?browser).*(mac|macos|osx).*(x64|x86_64|amd64).*(\\.pkg|\\.dmg)$",
+    "platform": "macos-x64",
+    "os": "macos",
+    "arch": "x64",
+    "installer": "pkg"
+  },
+  {
+    "pattern": "(?i)^aibabrowserinstaller(?:[-_.]v?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9a-z.-]+)?)?\\.(pkg|dmg)$",
+    "platform": "macos-universal",
+    "os": "macos",
+    "arch": "universal",
+    "installer": "pkg"
+  },
+  {
+    "pattern": "(?i)(aibabrowser|aiba[-_. ]?browser).*(linux).*(x64|x86_64|amd64).*(\\.deb|\\.rpm|\\.appimage|\\.tar\\.gz)$",
+    "platform": "linux-x64",
+    "os": "linux",
+    "arch": "x64",
+    "installer": "deb"
+  },
+  {
+    "pattern": "(?i)(aibabrowser|aiba[-_. ]?browser).*(linux).*(arm64|aarch64).*(\\.deb|\\.rpm|\\.appimage|\\.tar\\.gz)$",
+    "platform": "linux-arm64",
+    "os": "linux",
+    "arch": "arm64",
+    "installer": "deb"
+  }
+]

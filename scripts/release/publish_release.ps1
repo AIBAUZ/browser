@@ -405,8 +405,18 @@ function Create-OrUpdateRelease([System.Collections.Generic.List[string]]$Assets
     $script:Title = "AIBA Browser $Tag"
   }
 
-  & gh release view $Tag --repo $Repo *> $null
-  if ($LASTEXITCODE -eq 0) {
+  $releaseExists = $false
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    & gh release view $Tag --repo $Repo *> $null
+    $releaseExists = ($LASTEXITCODE -eq 0)
+  }
+  finally {
+    $ErrorActionPreference = $prevEap
+  }
+
+  if ($releaseExists) {
     Log "Release $Tag exists. Uploading/replacing assets"
     & gh release upload $Tag @Assets --repo $Repo --clobber
     if ($LASTEXITCODE -ne 0) { Die "Failed to upload release assets" }

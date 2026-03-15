@@ -1,5 +1,12 @@
 [
   {
+    "pattern": "(?i)^aibabrowsersetup\\.(exe|msi)$",
+    "platform": "windows-x64",
+    "os": "windows",
+    "arch": "x64",
+    "installer": "exe"
+  },
+  {
     "pattern": "(?i)(aibabrowser|aiba[-_. ]?browser).*(win|windows).*(x64|amd64).*(\\.exe|\\.msi)$",
     "platform": "windows-x64",
     "os": "windows",

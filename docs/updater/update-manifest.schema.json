@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/AIBAUZ/browser/docs/updater/update-manifest.schema.json",
+  "title": "AIBA Browser Update Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "repo",
+    "channel",
+    "tag",
+    "version",
+    "generated_at",
+    "assets"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "repo": {
+      "type": "string",
+      "pattern": "^[^/]+/[^/]+$"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "beta"
+      ]
+    },
+    "tag": {
+      "type": "string",
+      "pattern": "^v?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "release_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "name",
+          "os",
+          "arch",
+          "installer",
+          "size",
+          "sha256",
+          "download_url"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "os": {
+            "type": "string",
+            "enum": [
+              "windows",
+              "macos",
+              "linux"
+            ]
+          },
+          "arch": {
+            "type": "string",
+            "enum": [
+              "x64",
+              "arm64",
+              "universal"
+            ]
+          },
+          "installer": {
+            "type": "string",
+            "enum": [
+              "exe",
+              "msi",
+              "pkg",
+              "dmg",
+              "deb",
+              "rpm",
+              "appimage",
+              "tar.gz"
+            ]
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "download_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "content_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
+
